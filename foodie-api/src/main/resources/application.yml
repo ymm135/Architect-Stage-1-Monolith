@@ -32,6 +32,19 @@ mybatis:
   mapper-locations: classpath:mapper/*.xml      #mapper映射文件
 
 
-#通用mapper配置
+############################################################
+#
+# mybatis mapper 配置
+#
+############################################################
+# 通用 Mapper 配置
+mapper:
+  mappers: com.imooc.my.mapper.MyMapper
+  not-empty: false
+  identity: MYSQL
+
+logging:
+  level:
+    root: trace
 
 
