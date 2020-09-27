@@ -3,6 +3,7 @@ package com.imooc.service.impl;
 import com.imooc.mapper.StuMapper;
 import com.imooc.pojo.Stu;
 import com.imooc.service.StuService;
+import com.imooc.utils.MD5Utils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -58,10 +59,19 @@ public class StuServiceImpl implements StuService {
         stuMapper.insert(stu);
     }
 
-    @Transactional(propagation = Propagation.MANDATORY)
+    @Transactional(propagation = Propagation.REQUIRED)
     public void saveChild(){
         saveChild1();
-        //int a = 1 / 0;
+
+//        try {
+//            MD5Utils.getMD5Str(null);
+//        }catch (Exception e){
+//            System.out.println("saveChild E " + e.getMessage());
+//            e.printStackTrace();
+//        }
+
+        int a = 1 / 0;
+
         saveChild2();
     }
 
