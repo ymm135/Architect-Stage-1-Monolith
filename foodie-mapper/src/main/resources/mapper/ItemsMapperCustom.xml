@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.imooc.mapper.ItemsMapperCustom">
+
+    <resultMap id="categoryItemsVO" type="com.imooc.pojo.vo.CategoryItemsVO">
+        <id column="id" property="id"/>
+        <result column="rootCatName" property="rootCatName"/>
+        <result column="slogan" property="slogan"/>
+        <result column="catImage" property="catImage"/>
+        <result column="bgColor" property="bgColor"/>
+
+        <!-- 返回集合对象 -->
+        <collection property="simpleItemList" ofType="com.imooc.pojo.vo.ItemsVO">
+            <id column="itemId" property="itemId"/>
+            <result column="itemName" property="itemName"/>
+            <result column="itemUrl" property="itemUrl"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSixNewItemByRootCatId" parameterType="int" resultMap="categoryItemsVO">
+		SELECT
+			c.id as id,
+			c.`name` as rootCatName,
+			c.slogan as slogan,
+			c.cat_image as catImage,
+			c.bg_color as bgColor,
+			i.item_name as itemName,
+			i.id as itemId,
+			img.url as itemUrl
+		FROM
+			category AS c
+		LEFT JOIN
+			items AS i
+		ON
+			c.id = i.root_cat_id
+		JOIN
+			items_img AS img
+		ON
+			i.id = img.item_id
+		WHERE
+			c.type = 1
+		AND
+			i.root_cat_id = #{root_cat_id}
+		AND
+			img.is_main = 1
+		ORDER BY img.created_time DESC
+		LIMIT 0,6
+  </select>
+</mapper>
