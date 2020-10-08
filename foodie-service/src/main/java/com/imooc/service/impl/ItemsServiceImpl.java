@@ -9,6 +9,7 @@ import com.imooc.pojo.*;
 import com.imooc.pojo.vo.CategoryItemsVO;
 import com.imooc.pojo.vo.CommentLevelCountVO;
 import com.imooc.pojo.vo.CommentsVO;
+import com.imooc.pojo.vo.SearchItemsVO;
 import com.imooc.service.ItemsService;
 import com.imooc.utils.DesensitizationUtil;
 import com.imooc.utils.PagedGridResult;
@@ -147,6 +148,29 @@ public class ItemsServiceImpl implements ItemsService {
             comment.setNickname(DesensitizationUtil.commonDisplay(comment.getNickname()));
         }
 
+        PagedGridResult pagedGridResult = getPagedGridResult(page, comments);
+
+        return pagedGridResult;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public PagedGridResult searchItems(String keywords, String sort, Integer page, Integer pageSize) {
+
+        Map<String,Object> params = new HashMap<>();
+        params.put("keywords", keywords);
+        params.put("sort", sort);
+
+        //分页查询  通过统一拦截sql
+        Page<Object> objects = PageHelper.startPage(page, pageSize);
+        List<SearchItemsVO> comments = itemsMapperCustom.searchItems(params);
+
+        PagedGridResult pagedGridResult = getPagedGridResult(page, comments);
+
+        return pagedGridResult;
+    }
+
+    private PagedGridResult getPagedGridResult(Integer page, List<?> comments) {
         PageInfo<?> pageList = new PageInfo<>(comments);
         PagedGridResult pagedGridResult = new PagedGridResult();
         //当前页
@@ -157,6 +181,20 @@ public class ItemsServiceImpl implements ItemsService {
         pagedGridResult.setTotal(pageList.getPages());
         //总记录数
         pagedGridResult.setRecords(pageList.getTotal());
+        return pagedGridResult;
+    }
+
+    @Override
+    public PagedGridResult searchItemsByThirdCat(Integer catId, String sort, Integer page, Integer pageSize) {
+        Map<String,Object> params = new HashMap<>();
+        params.put("catId", catId);
+        params.put("sort", sort);
+
+        //分页查询  通过统一拦截sql
+        Page<Object> objects = PageHelper.startPage(page, pageSize);
+        List<SearchItemsVO> comments = itemsMapperCustom.searchItemsByThirdCat(params);
+
+        PagedGridResult pagedGridResult = getPagedGridResult(page, comments);
 
         return pagedGridResult;
     }

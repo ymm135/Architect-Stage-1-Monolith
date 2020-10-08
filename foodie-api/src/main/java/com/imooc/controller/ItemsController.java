@@ -103,4 +103,81 @@ public class ItemsController {
         return IMOOCJSONResult.ok(itemsComments);
     }
 
+    @ApiOperation(value = "商品搜索", httpMethod = "GET", tags = "商品搜索")
+    @GetMapping("/search")
+    public IMOOCJSONResult searchItems(
+            @ApiParam(name = "keywords", value = "搜索的关键字", required = true)
+            @PathParam("keywords")
+                    String keywords,
+            @ApiParam(name = "sort", value = "排序方式", required = true)
+            @PathParam("sort")
+                    String sort,
+            @ApiParam(name = "page", value = "当前页" , required = true)
+            @PathParam("page")
+                    Integer page,
+            @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
+            @PathParam("pageSize")
+                    Integer pageSize) {
+        logger.info("searchItems =========================== " + keywords);
+
+        if (StringUtils.isEmpty(keywords)) {
+            return IMOOCJSONResult.errorMsg("搜索的关键字不能为空");
+        }
+
+        if(StringUtils.isEmpty(sort)){
+            sort = "p";
+        }
+
+        if (page == null) {
+            page = 1;
+        }
+
+        if (pageSize == null) {
+            pageSize = 10;
+        }
+
+        PagedGridResult itemsComments = itemsService.searchItems(keywords, sort, page, pageSize);
+
+        return IMOOCJSONResult.ok(itemsComments);
+    }
+
+
+    @ApiOperation(value = "商品搜索", httpMethod = "GET", tags = "商品搜索")
+    @GetMapping("/catItems")
+    public IMOOCJSONResult searchItemsByCatId(
+            @ApiParam(name = "catId", value = "三级分类ID", required = true)
+            @PathParam("catId")
+                    Integer catId,
+            @ApiParam(name = "sort", value = "排序方式", required = true)
+            @PathParam("sort")
+                    String sort,
+            @ApiParam(name = "page", value = "当前页" , required = true)
+            @PathParam("page")
+                    Integer page,
+            @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
+            @PathParam("pageSize")
+                    Integer pageSize) {
+        logger.info("searchItems =========================== " + catId);
+
+        if (catId == null) {
+            return IMOOCJSONResult.errorMsg("搜索的关键字不能为空");
+        }
+
+        if(StringUtils.isEmpty(sort)){
+            sort = "p";
+        }
+
+        if (page == null) {
+            page = 1;
+        }
+
+        if (pageSize == null) {
+            pageSize = 10;
+        }
+
+        PagedGridResult itemsComments = itemsService.searchItemsByThirdCat(catId, sort, page, pageSize);
+
+        return IMOOCJSONResult.ok(itemsComments);
+    }
+
 }

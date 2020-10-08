@@ -47,37 +47,114 @@
 		LIMIT 0,6
   	</select>
 
-	
-	<resultMap id="commentsVO" type="com.imooc.pojo.vo.CommentsVO">
-		<result column="commentLevel" property="commentLevel" />
-		<result column="content" property="content" />
-		<result column="specName" property="specName" />
-		<result column="createdTime" property="createdTime" />
-		<result column="nickname" property="nickname" />
-		<result column="userFace" property="userFace" />
-	</resultMap>
-    <select id="queryItemComments" parameterType="Map" resultMap="commentsVO">
-		SELECT
-			c.comment_level AS commentLevel,
-			c.content AS content,
-			c.sepc_name AS specName,
-			c.created_time AS createdTime,
-			u.nickname AS nickname,
-			u.face AS userFace
-		FROM
-			items_comments AS c
-		LEFT JOIN
-			users AS u
-		on
-			c.user_id = u.id
-		WHERE
-			c.item_id = #{map.itemId}
-		<if test=" map.level != null and map.level != '' ">
-			AND
-			c.comment_level = #{map.level}
-		</if>
-		ORDER BY
-			c.updated_time DESC
+    <select id="queryItemComments" parameterType="Map" resultType="com.imooc.pojo.vo.CommentsVO">
+        SELECT
+        c.comment_level AS commentLevel,
+        c.content AS content,
+        c.sepc_name AS specName,
+        c.created_time AS createdTime,
+        u.nickname AS nickname,
+        u.face AS userFace
+        FROM
+        items_comments AS c
+        LEFT JOIN
+        users AS u
+        on
+        c.user_id = u.id
+        WHERE
+        c.item_id = #{map.itemId}
+        <if test=" map.level != null and map.level != '' ">
+            AND
+            c.comment_level = #{map.level}
+        </if>
+        ORDER BY
+        c.updated_time DESC
 
     </select>
+
+    <select id="searchItems" parameterType="Map" resultType="com.imooc.pojo.vo.SearchItemsVO">
+		SELECT
+			i.item_name as itemName,
+			i.id as itemId,
+			i.sell_counts as sellCounts,
+			s.price_discount as price,
+			img.url as imgUrl
+		FROM
+			items as i
+		LEFT JOIN
+			(
+				SELECT
+					item_id, MIN(price_discount) as price_discount
+				FROM
+					items_spec as spec
+				GROUP BY
+					item_id
+			) as s
+		ON
+			i.id = s.item_id
+		LEFT JOIN
+			items_img as img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+			<if test=" map.keywords != null and map.keywords != '' ">
+				AND
+				i.item_name LIKE '%${map.keywords}%'
+			</if>
+		ORDER BY
+			<choose>
+				<when test="map.sort == &quot;c&quot; ">
+					i.sell_counts desc
+				</when>
+				<when test="map.sort == &quot;p&quot;">
+					s.price_discount asc
+				</when>
+				<otherwise>
+					i.item_name asc
+				</otherwise>
+			</choose>
+	</select>
+
+	<select id="searchItemsByThirdCat" parameterType="Map" resultType="com.imooc.pojo.vo.SearchItemsVO">
+		SELECT
+			i.item_name as itemName,
+			i.id as itemId,
+			i.sell_counts as sellCounts,
+			s.price_discount as price,
+			img.url as imgUrl
+		FROM
+			items as i
+		LEFT JOIN
+			(
+			SELECT
+				item_id, MIN(price_discount) as price_discount
+			FROM
+				items_spec as spec
+			GROUP BY
+				item_id
+			) as s
+		ON
+			i.id = s.item_id
+		LEFT JOIN
+			items_img as img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+		AND
+			i.cat_id = #{map.catId}
+		ORDER BY
+		<choose>
+			<when test="map.sort == &quot;c&quot; ">
+				i.sell_counts desc
+			</when>
+			<when test="map.sort == &quot;p&quot;">
+				s.price_discount asc
+			</when>
+			<otherwise>
+				i.item_name asc
+			</otherwise>
+		</choose>
+	</select>
 </mapper>

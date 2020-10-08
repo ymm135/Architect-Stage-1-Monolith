@@ -7,9 +7,12 @@ import com.imooc.pojo.ItemsSpec;
 import com.imooc.pojo.vo.CategoryItemsVO;
 import com.imooc.pojo.vo.CommentLevelCountVO;
 import com.imooc.pojo.vo.CommentsVO;
+import com.imooc.pojo.vo.SearchItemsVO;
 import com.imooc.utils.PagedGridResult;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 public interface ItemsService {
     List<CategoryItemsVO> getSixNewItemByRootCatId(Integer rootCatId);
@@ -57,5 +60,29 @@ public interface ItemsService {
      */
     PagedGridResult getItemsComments(String itemId, Integer commentLevel,
                                      Integer page, Integer pageSize);
+
+
+    /**
+     *
+     * @param keyword
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PagedGridResult searchItems(String keyword, String sort,
+                                     Integer page, Integer pageSize);
+
+
+    /**
+     *
+     * @param catId
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PagedGridResult searchItemsByThirdCat(Integer catId, String sort,
+                                Integer page, Integer pageSize);
 
 }
