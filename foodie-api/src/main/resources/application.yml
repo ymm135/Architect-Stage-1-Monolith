@@ -45,6 +45,12 @@ mapper:
   not-empty: false
   identity: MYSQL
 
+#分页插件
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+
+
 #logging:
 #  level:
 #    root: info

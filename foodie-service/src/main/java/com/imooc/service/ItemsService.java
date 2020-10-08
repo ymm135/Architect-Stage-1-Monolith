@@ -5,6 +5,9 @@ import com.imooc.pojo.ItemsImg;
 import com.imooc.pojo.ItemsParam;
 import com.imooc.pojo.ItemsSpec;
 import com.imooc.pojo.vo.CategoryItemsVO;
+import com.imooc.pojo.vo.CommentLevelCountVO;
+import com.imooc.pojo.vo.CommentsVO;
+import com.imooc.utils.PagedGridResult;
 
 import java.util.List;
 
@@ -39,6 +42,20 @@ public interface ItemsService {
      */
     ItemsParam queryItemParamById(String itemId);
 
+    /**
+     *
+     * @param itemId
+     * @return
+     */
+    CommentLevelCountVO queryItemCommentById(String itemId);
 
+    /**
+     *
+     * @param itemId
+     * @param commentLevel
+     * @return
+     */
+    PagedGridResult getItemsComments(String itemId, Integer commentLevel,
+                                     Integer page, Integer pageSize);
 
 }

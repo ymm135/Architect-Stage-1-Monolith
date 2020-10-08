@@ -5,7 +5,9 @@ import com.imooc.pojo.Items;
 import com.imooc.pojo.ItemsImg;
 import com.imooc.pojo.ItemsParam;
 import com.imooc.pojo.ItemsSpec;
+import com.imooc.pojo.vo.CommentsVO;
 import com.imooc.service.ItemsService;
+import com.imooc.utils.PagedGridResult;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +39,12 @@ public class ItemsTest {
         ItemsParam itemsParam = itemsService.queryItemParamById(itemId);
 
         System.out.println("End");
+    }
+
+    @Test
+    public void getComments(){
+        PagedGridResult itemsComments = itemsService.getItemsComments("cake-1001", 1,1, 5);
+        System.out.println("");
     }
 
 }

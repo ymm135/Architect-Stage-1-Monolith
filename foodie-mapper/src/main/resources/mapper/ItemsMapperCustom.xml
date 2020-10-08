@@ -45,5 +45,39 @@
 			img.is_main = 1
 		ORDER BY img.created_time DESC
 		LIMIT 0,6
-  </select>
+  	</select>
+
+	
+	<resultMap id="commentsVO" type="com.imooc.pojo.vo.CommentsVO">
+		<result column="commentLevel" property="commentLevel" />
+		<result column="content" property="content" />
+		<result column="specName" property="specName" />
+		<result column="createdTime" property="createdTime" />
+		<result column="nickname" property="nickname" />
+		<result column="userFace" property="userFace" />
+	</resultMap>
+    <select id="queryItemComments" parameterType="Map" resultMap="commentsVO">
+		SELECT
+			c.comment_level AS commentLevel,
+			c.content AS content,
+			c.sepc_name AS specName,
+			c.created_time AS createdTime,
+			u.nickname AS nickname,
+			u.face AS userFace
+		FROM
+			items_comments AS c
+		LEFT JOIN
+			users AS u
+		on
+			c.user_id = u.id
+		WHERE
+			c.item_id = #{map.itemId}
+		<if test=" map.level != null and map.level != '' ">
+			AND
+			c.comment_level = #{map.level}
+		</if>
+		ORDER BY
+			c.updated_time DESC
+
+    </select>
 </mapper>
