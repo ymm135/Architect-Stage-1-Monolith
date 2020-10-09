@@ -47,7 +47,7 @@ public class PassportController {
     }
 
     @PostMapping("/regist")
-    public IMOOCJSONResult regist(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response ) {
+    public IMOOCJSONResult regist(@RequestBody UserBO userBO, HttpServletRequest request, HttpServletResponse response) {
         String username = userBO.getUsername();
         String password = userBO.getPassword();
         String confirmPassword = userBO.getConfirmPassword();
@@ -59,11 +59,11 @@ public class PassportController {
             return IMOOCJSONResult.errorMsg("用户名或密码不能为空");
         }
 
-        if(password.length() < 6){
+        if (password.length() < 6) {
             return IMOOCJSONResult.errorMsg("密码不能少于6位");
         }
 
-        if(!password.equals(confirmPassword)){
+        if (!password.equals(confirmPassword)) {
             return IMOOCJSONResult.errorMsg("两次输入的密码不一致");
         }
 
@@ -71,19 +71,19 @@ public class PassportController {
         Users users = userService.addUser(userBO);
         setNull(users);
 
-        CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(users), true);
 
         return IMOOCJSONResult.ok(users);
     }
 
     @PostMapping("/login")
-    public IMOOCJSONResult login(@RequestBody Map params, HttpServletRequest request, HttpServletResponse response){
+    public IMOOCJSONResult login(@RequestBody Map params, HttpServletRequest request, HttpServletResponse response) {
 
 
         String userName = (String) params.get("username");
         String password = (String) params.get("password");
 
-        if(StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)){
+        if (StringUtils.isEmpty(userName) || StringUtils.isEmpty(password)) {
             return IMOOCJSONResult.errorMsg("用户名或密码不能为空");
         }
 
@@ -93,15 +93,18 @@ public class PassportController {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        if(users == null){
+        if (users == null) {
             return IMOOCJSONResult.errorMsg("用户名或密码不正确");
-        }else {
-            setNull(users);
-
-            CookieUtils.setCookie(request,response,"user", JsonUtils.objectToJson(users),true);
-
-            return IMOOCJSONResult.ok(users);
         }
+
+        setNull(users);
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(users), true);
+
+        //TODO 生成用户TOKEN，存入Redis会话，
+        // 同步购物车数据
+
+
+        return IMOOCJSONResult.ok(users);
     }
 
     private void setNull(Users users) {
@@ -113,10 +116,10 @@ public class PassportController {
     }
 
     @PostMapping("/logout")
-    public IMOOCJSONResult logout(@RequestParam String userId , HttpServletRequest request, HttpServletResponse response){
+    public IMOOCJSONResult logout(@RequestParam String userId, HttpServletRequest request, HttpServletResponse response) {
 
         //退出时，需要删除uerId
-        CookieUtils.deleteCookie(request,response,"user");
+        CookieUtils.deleteCookie(request, response, "user");
         //TODO 用户退出，清空购物车
         //TODO 分布式系统中，清除用户数据
 

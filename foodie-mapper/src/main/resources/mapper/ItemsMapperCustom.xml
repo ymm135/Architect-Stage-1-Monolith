@@ -157,4 +157,34 @@
 			</otherwise>
 		</choose>
 	</select>
+	
+	<select id="queryItemBySpecId" parameterType="Map" resultType="com.imooc.pojo.vo.ShopCartVO" >
+		SELECT
+			spec.item_id as itemId,
+			img.url as itemImgUrl,
+			i.item_name as itemName,
+			spec.id as specId,
+			spec.`name` as specName,
+			i.sell_counts as buyCounts,
+			spec.price_discount as priceDiscount,
+			spec.price_normal as priceNormal
+		FROM
+			items_spec spec
+		left JOIN
+			items i
+		ON
+			i.id = spec.item_id
+		LEFT JOIN
+			items_img img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+		AND
+				spec.id
+			IN
+				<foreach collection="paramsList" index="index" item="specId" open="(" separator="," close=")">
+					#{specId}
+				</foreach>
+	</select>
 </mapper>

@@ -4,10 +4,7 @@ import com.imooc.pojo.Items;
 import com.imooc.pojo.ItemsImg;
 import com.imooc.pojo.ItemsParam;
 import com.imooc.pojo.ItemsSpec;
-import com.imooc.pojo.vo.CategoryItemsVO;
-import com.imooc.pojo.vo.CommentLevelCountVO;
-import com.imooc.pojo.vo.CommentsVO;
-import com.imooc.pojo.vo.SearchItemsVO;
+import com.imooc.pojo.vo.*;
 import com.imooc.utils.PagedGridResult;
 import org.apache.ibatis.annotations.Param;
 
@@ -84,5 +81,12 @@ public interface ItemsService {
      */
     PagedGridResult searchItemsByThirdCat(Integer catId, String sort,
                                 Integer page, Integer pageSize);
+
+    /**
+     *
+     * @param specId
+     * @return
+     */
+    List<ShopCartVO> queryItemBySpecId(String specId);
 
 }

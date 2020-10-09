@@ -6,10 +6,7 @@ import com.github.pagehelper.PageInfo;
 import com.imooc.enums.CommentLevel;
 import com.imooc.mapper.*;
 import com.imooc.pojo.*;
-import com.imooc.pojo.vo.CategoryItemsVO;
-import com.imooc.pojo.vo.CommentLevelCountVO;
-import com.imooc.pojo.vo.CommentsVO;
-import com.imooc.pojo.vo.SearchItemsVO;
+import com.imooc.pojo.vo.*;
 import com.imooc.service.ItemsService;
 import com.imooc.utils.DesensitizationUtil;
 import com.imooc.utils.PagedGridResult;
@@ -19,9 +16,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class ItemsServiceImpl implements ItemsService {
@@ -197,5 +192,15 @@ public class ItemsServiceImpl implements ItemsService {
         PagedGridResult pagedGridResult = getPagedGridResult(page, comments);
 
         return pagedGridResult;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public List<ShopCartVO> queryItemBySpecId(String specId) {
+        String[] ids = specId.split(",");
+        List<String> list = new ArrayList<>();
+
+        Collections.addAll(list, ids);
+        return itemsMapperCustom.queryItemBySpecId(list);
     }
 }

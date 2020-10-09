@@ -3,6 +3,7 @@ package com.imooc.controller;
 import com.imooc.pojo.vo.CommentLevelCountVO;
 import com.imooc.pojo.vo.CommentsVO;
 import com.imooc.pojo.vo.ItemsInfoVO;
+import com.imooc.pojo.vo.ShopCartVO;
 import com.imooc.service.ItemsService;
 import com.imooc.utils.IMOOCJSONResult;
 import com.imooc.utils.PagedGridResult;
@@ -13,10 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.websocket.server.PathParam;
 import java.util.List;
@@ -178,6 +176,23 @@ public class ItemsController {
         PagedGridResult itemsComments = itemsService.searchItemsByThirdCat(catId, sort, page, pageSize);
 
         return IMOOCJSONResult.ok(itemsComments);
+    }
+
+    @ApiOperation(value = "查询商品最新的价格", httpMethod = "GET", tags = "查询商品最新的价格")
+    @GetMapping("/refresh")
+    public IMOOCJSONResult refresh(
+            @ApiParam(name = "itemSpecIds", value = "商品规格拼接的Id", required = true, example = "1,2)")
+            @RequestParam
+                    String itemSpecIds) {
+        logger.info("refresh =========================== " + itemSpecIds);
+
+        if (StringUtils.isEmpty(itemSpecIds)) {
+            return IMOOCJSONResult.ok();
+        }
+
+        List<ShopCartVO> shopCartVOS = itemsService.queryItemBySpecId(itemSpecIds);
+
+        return IMOOCJSONResult.ok(shopCartVOS);
     }
 
 }
