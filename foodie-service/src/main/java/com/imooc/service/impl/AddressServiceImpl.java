@@ -116,4 +116,15 @@ public class AddressServiceImpl implements AddressService {
         userAddressMapper.updateByPrimaryKeySelective(userAddressNewDef);
 
     }
+
+    @Override
+    public UserAddress queryUserAddress(String userId, String addressId) {
+        UserAddress userAddress = new UserAddress();
+        userAddress.setId(addressId);
+        userAddress.setUserId(userId);
+
+        UserAddress userAddressRes = userAddressMapper.selectOne(userAddress);
+
+        return userAddressRes;
+    }
 }

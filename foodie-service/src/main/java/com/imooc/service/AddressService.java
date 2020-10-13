@@ -24,4 +24,7 @@ public interface AddressService {
     void deleteUserAddress(String userId, String addressId);
 
     void updateUserAddressToDefault(String userId, String addressId);
+
+
+    UserAddress queryUserAddress(String userId, String addressId);
 }

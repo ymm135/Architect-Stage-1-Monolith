@@ -14,6 +14,7 @@
         <module>foodie-mapper</module>
         <module>foodie-service</module>
         <module>foodie-api</module>
+<!--        <module>foodie-payment</module>         -->
     </modules>
 
     <packaging>pom</packaging>
@@ -68,6 +69,13 @@
             <version>1.2.10</version>
         </dependency>
 
+        <!-- 自动导入 -->
+        <dependency>
+            <groupId>tk.mybatis</groupId>
+            <artifactId>mapper-spring-boot-autoconfigure</artifactId>
+            <version>1.2.4</version>
+        </dependency>
+
         <!-- apache 工具类 -->
         <dependency>
             <groupId>commons-codec</groupId>
@@ -114,6 +122,13 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+
+        <!-- Redis -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
     </dependencies>
 
     <!-- Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent! -->

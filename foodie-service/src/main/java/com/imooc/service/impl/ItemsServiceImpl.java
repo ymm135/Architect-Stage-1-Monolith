@@ -4,6 +4,7 @@ import com.github.pagehelper.Page;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.imooc.enums.CommentLevel;
+import com.imooc.enums.YesOrNo;
 import com.imooc.mapper.*;
 import com.imooc.pojo.*;
 import com.imooc.pojo.vo.*;
@@ -202,5 +203,39 @@ public class ItemsServiceImpl implements ItemsService {
 
         Collections.addAll(list, ids);
         return itemsMapperCustom.queryItemBySpecId(list);
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public ItemsSpec queryItemSpecBySpecId(String specId) {
+        ItemsSpec itemsSpec = itemsSpecMapper.selectByPrimaryKey(specId);
+        return itemsSpec;
+    }
+
+    @Transactional(propagation = Propagation.SUPPORTS)
+    @Override
+    public String queryItemMainImgById(String itemId) {
+        ItemsImg itemsImg = new ItemsImg();
+        itemsImg.setItemId(itemId);
+        itemsImg.setIsMain(YesOrNo.YES.type);
+
+        ItemsImg res = itemsImgMapper.selectOne(itemsImg);
+
+        return res == null ? null : res.getUrl();
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    @Override
+    public  void decreaseItemSpecStock(String specId, Integer bugCounts) {
+        //集群下不推荐使用synchronized
+        //也不实用锁数据库
+        //分布式锁
+
+        //乐观锁
+        int res = itemsMapperCustom.decreaseItemSpecStock(specId, bugCounts);
+        if(res != 1){
+            throw new RuntimeException("订单创建失败, 购买数量大于库存数量!");
+        }
+
     }
 }

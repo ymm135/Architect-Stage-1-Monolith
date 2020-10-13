@@ -89,4 +89,11 @@ public interface ItemsService {
      */
     List<ShopCartVO> queryItemBySpecId(String specId);
 
+
+    ItemsSpec queryItemSpecBySpecId(String specId);
+
+    String queryItemMainImgById(String itemId);
+
+    void decreaseItemSpecStock(String specId, Integer bugCounts);
+
 }
