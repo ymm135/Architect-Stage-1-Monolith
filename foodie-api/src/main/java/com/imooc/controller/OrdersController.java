@@ -59,8 +59,9 @@ public class OrdersController {
         //2.移除购物车已提交的商品
         //TODO 整合Redis之后，再去完善购物车
 
+        //TODO 清除购物车，如果需要多次测试，可以不清空！！
         //清除cookie
-        //CookieUtils.setCookie(request, response, "shopcart", "");
+        CookieUtils.setCookie(request, response, "shopcart", "");
 
         //3.向支付中心提交当前订单，用于保存支付中心的订单信息
         HttpHeaders headers = new HttpHeaders();
