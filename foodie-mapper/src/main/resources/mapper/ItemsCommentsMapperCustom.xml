@@ -43,7 +43,7 @@
 		<result column="itemId" property="itemId" />
 		<result column="itemName" property="itemName" />
 		<result column="specName" property="specName" />
-		<result column="imgUrl" property="imgUrl" />
+		<result column="itemImg" property="itemImg" />
 	</resultMap>
 	<select id="queryUserComments" parameterType="Map" resultMap="userComments">
 		SELECT

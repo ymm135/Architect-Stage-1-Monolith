@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!--    WAR 第一步 -->
-    <packaging>war</packaging>
+<!--    <packaging>war</packaging>-->
 
     <artifactId>foodie-api</artifactId>
 

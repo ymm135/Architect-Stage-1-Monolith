@@ -10,6 +10,7 @@ import tk.mybatis.spring.annotation.MapperScan;
 
 /**
  * War包启动程序
+ * WAR 第4部，初始化启动类
  */
 public class WarStarterApplication extends SpringBootServletInitializer {
     @Override
