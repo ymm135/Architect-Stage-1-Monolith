@@ -1,7 +1,6 @@
 package com.imooc.controller;
 
 import com.imooc.pojo.vo.CommentLevelCountVO;
-import com.imooc.pojo.vo.CommentsVO;
 import com.imooc.pojo.vo.ItemsInfoVO;
 import com.imooc.pojo.vo.ShopCartVO;
 import com.imooc.service.ItemsService;
@@ -16,7 +15,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import javax.websocket.server.PathParam;
 import java.util.List;
 
 @Api(value = "商品相关接口", tags = "包含商品详情、规格、价格、评论等信息")
@@ -54,7 +52,7 @@ public class ItemsController {
     @GetMapping("/commentLevel")
     public IMOOCJSONResult getItemLevel(
             @ApiParam(name = "itemId", value = "商品ID", required = true)
-            @PathParam("itemId")
+            @RequestParam("itemId")
                     String itemId) {
         logger.info("getItemLevel =========================== " + itemId);
 
@@ -71,16 +69,16 @@ public class ItemsController {
     @GetMapping("/comments")
     public IMOOCJSONResult getItemComments(
             @ApiParam(name = "itemId", value = "商品ID", required = true)
-            @PathParam("itemId")
+            @RequestParam("itemId")
                     String itemId,
             @ApiParam(name = "评论类别", value = "评论分类", required = true)
-            @PathParam("level")
+            @RequestParam("level")
                     Integer level,
             @ApiParam(name = "当前页", value = "当前页" , required = true)
-            @PathParam("page")
+            @RequestParam("page")
                     Integer page,
             @ApiParam(name = "每页显示个数", value = "每页显示个数", required = true)
-            @PathParam("pageSize")
+            @RequestParam("pageSize")
                     Integer pageSize) {
         logger.info("getItemComments =========================== " + itemId);
 
@@ -105,16 +103,16 @@ public class ItemsController {
     @GetMapping("/search")
     public IMOOCJSONResult searchItems(
             @ApiParam(name = "keywords", value = "搜索的关键字", required = true)
-            @PathParam("keywords")
+            @RequestParam("keywords")
                     String keywords,
             @ApiParam(name = "sort", value = "排序方式", required = true)
-            @PathParam("sort")
+            @RequestParam("sort")
                     String sort,
             @ApiParam(name = "page", value = "当前页" , required = true)
-            @PathParam("page")
+            @RequestParam("page")
                     Integer page,
             @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
-            @PathParam("pageSize")
+            @RequestParam("pageSize")
                     Integer pageSize) {
         logger.info("searchItems =========================== " + keywords);
 
@@ -144,16 +142,16 @@ public class ItemsController {
     @GetMapping("/catItems")
     public IMOOCJSONResult searchItemsByCatId(
             @ApiParam(name = "catId", value = "三级分类ID", required = true)
-            @PathParam("catId")
+            @RequestParam("catId")
                     Integer catId,
             @ApiParam(name = "sort", value = "排序方式", required = true)
-            @PathParam("sort")
+            @RequestParam("sort")
                     String sort,
             @ApiParam(name = "page", value = "当前页" , required = true)
-            @PathParam("page")
+            @RequestParam("page")
                     Integer page,
             @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
-            @PathParam("pageSize")
+            @RequestParam("pageSize")
                     Integer pageSize) {
         logger.info("searchItems =========================== " + catId);
 

@@ -5,7 +5,8 @@ import java.io.File;
 public class Common {
 
     //支付后支付中心回调的Url   支付成功->支付中心->天天吃货平台->回调的Url
-    public static String PAY_RETURN_URL = "http://hqd27e.natappfree.cc/orders/notifyMerchantOrderPaid";
+    //121.196.39.142 阿里云
+    public static String PAY_RETURN_URL = "http://121.196.39.142:8088/foodie-api/orders/notifyMerchantOrderPaid";
 
     public static String PAYMENT_URL = "http://payment.t.mukewang.com/foodie-payment/payment/createMerchantOrder";
 
