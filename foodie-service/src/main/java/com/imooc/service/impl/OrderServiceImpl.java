@@ -97,7 +97,6 @@ public class OrderServiceImpl implements OrderService {
         Integer totalAmount = 0;//总价格
         Integer realPayAmount = 0;//实际支付价格
 
-        //TODO 整合Redis后，再去获取购物车中商品的数据量，现在默认为1
         Integer buyConuts = 1;
 
         String RESIS_KEY_SHOPCART = "shopcart:" + userId;

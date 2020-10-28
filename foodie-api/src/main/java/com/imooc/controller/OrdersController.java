@@ -69,8 +69,8 @@ public class OrdersController {
         merchantOrdersVO.setAmount(1);
 
         //2.移除购物车已提交的商品
-        //TODO 整合Redis之后，再去完善购物车
-        //TODO 清除购物车，如果需要多次测试，可以不清空！！
+        // 整合Redis之后，再去完善购物车
+        // 清除购物车，如果需要多次测试，可以不清空！！
 
         List<ShopCartBO> toBeRemoveShopCartList = order.getToBeRemoveShopCartList();
         String RESIS_KEY_SHOPCART = "shopcart:" + submitOrderBO.getUserId();

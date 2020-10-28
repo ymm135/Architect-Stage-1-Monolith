@@ -17,8 +17,7 @@ public class HelloController {
 
     @GetMapping("/hello")
     public String hello(){
-        new Throwable("matrix").printStackTrace();
-
+        //new Throwable("matrix").printStackTrace();
         logger.info("info----");
         logger.error("error----");
         logger.warn("warn----");

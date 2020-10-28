@@ -1,13 +1,12 @@
 package com.imooc.controller.user_center;
 
+import com.imooc.common.Common;
 import com.imooc.pojo.Users;
 import com.imooc.pojo.bo.user_center.UserInfoBO;
+import com.imooc.pojo.vo.UserVO;
 import com.imooc.resources.FileUploadResources;
 import com.imooc.service.user_center.UserCenterService;
-import com.imooc.utils.CookieUtils;
-import com.imooc.utils.DateUtil;
-import com.imooc.utils.IMOOCJSONResult;
-import com.imooc.utils.JsonUtils;
+import com.imooc.utils.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
@@ -15,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
@@ -31,6 +31,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Api(value = "用户信息接口", tags = "用户信息接口")
 @RestController
@@ -45,6 +46,9 @@ public class UserInfoController {
     @Autowired
     private FileUploadResources fileUploadResources;
 
+    @Autowired
+    private RedisOperator redisOperator;
+
     @ApiOperation(value = "修改用户信息", httpMethod = "POST", tags = "修改用户信息")
     @PostMapping("/update")
     public IMOOCJSONResult update(
@@ -57,20 +61,24 @@ public class UserInfoController {
         }
 
         Users users = userCenterService.updateUserInfo(userId, userInfoBO);
-        setNull(users);
+
+        // 整合Redis之后，需要增加token
+        UserVO userVO = getUserVO(users);
 
         //更新到Cookie中
-        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(users), true);
-
-        //TODO 整合Redis之后，需要增加token
+        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userVO), true);
 
         return IMOOCJSONResult.ok(users);
     }
 
-    private void setNull(Users users) {
-        users.setPassword(null);
-        users.setCreatedTime(null);
-        users.setUpdatedTime(null);
+    private UserVO getUserVO(Users users) {
+        String uuid = UUID.randomUUID().toString().trim();
+        redisOperator.set(Common.REDIS_USER_TOKEN + ":" + users.getId(), uuid);
+
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(users, userVO);
+        userVO.setUserUniqueToken(uuid);
+        return userVO;
     }
 
     private Map<String, String> getResultFromBinding(BindingResult bindingResult) {
@@ -140,12 +148,11 @@ public class UserInfoController {
                         //更新用户头像到数据库
                         Users users = userCenterService.updateUserFace(userId, userFaceUrl);
 
-                        setNull(users);
+                        // 整合Redis之后，需要增加token
+                        UserVO userVO = getUserVO(users);
 
                         //更新到Cookie中
-                        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(users), true);
-
-                        //TODO 整合Redis之后，需要增加token
+                        CookieUtils.setCookie(request, response, "user", JsonUtils.objectToJson(userVO), true);
 
                     } finally {
                         if (fos != null) {

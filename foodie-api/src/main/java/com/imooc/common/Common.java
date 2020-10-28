@@ -30,5 +30,7 @@ public class Common {
 
     public static String SHOPCART = "shopcart";
 
+    public static String REDIS_USER_TOKEN = "usertoken";
+
 
 }

@@ -44,7 +44,7 @@ public class ShopCartController {
 
         logger.info("userId=" + userId + "  ,shopcart=" + shopCartBO);
 
-        //TODO 等到Redis分布式学习之后，再去完善。用户登录之后，添加商品至购物车，并且会同步到后端!!
+        // 等到Redis分布式学习之后，再去完善。用户登录之后，添加商品至购物车，并且会同步到后端!!
         //如果购物车中已经存在相同的商品，商品的数量需要累加
         String RESIS_KEY_SHOPCART = Common.SHOPCART + ":" + userId;
         String shopcartItemsStr = redisOperator.get(RESIS_KEY_SHOPCART);
@@ -94,7 +94,7 @@ public class ShopCartController {
 
         logger.info("userId=" + userId + "  ,itemSpecId=" + itemSpecId);
 
-        //TODO 等到Redis分布式学习之后，再去完善。需要删除Redis中商品的信息
+        // 等到Redis分布式学习之后，再去完善。需要删除Redis中商品的信息
         String RESIS_KEY_SHOPCART = Common.SHOPCART + ":" + userId;
         String shopcartItemsStr = redisOperator.get(RESIS_KEY_SHOPCART);
         List<ShopCartBO> shopCartBOList = null;
