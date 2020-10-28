@@ -1,12 +1,10 @@
 package com.imooc.controller;
 
 import com.imooc.pojo.Users;
+import com.imooc.pojo.bo.ShopCartBO;
 import com.imooc.pojo.bo.UserBO;
 import com.imooc.service.UserService;
-import com.imooc.utils.CookieUtils;
-import com.imooc.utils.IMOOCJSONResult;
-import com.imooc.utils.JsonUtils;
-import com.imooc.utils.MD5Utils;
+import com.imooc.utils.*;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
@@ -15,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @Api(value = "注册登录", tags = "用于注册登录的接口")
@@ -24,6 +24,9 @@ public class PassportController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RedisOperator redisOperator;
 
     @ApiOperation(value = "判断用户是否存在", notes = "用户名是否存在", httpMethod = "GET")
     @GetMapping("usernameIsExist")
@@ -102,9 +105,66 @@ public class PassportController {
 
         //TODO 生成用户TOKEN，存入Redis会话，
         // 同步购物车数据
-
+        syncCookieAndRedisShopcartData(request, response, users.getId());
 
         return IMOOCJSONResult.ok(users);
+    }
+
+    /**
+     * 同步Cookie与redis中购物车的数据
+     *
+     * 如果redis为空
+     *          cookie也为空，不做处理
+     *          cookie不为空，在redis中存储cookie的数据
+     */
+    private void syncCookieAndRedisShopcartData(HttpServletRequest request, HttpServletResponse response, String userId){
+        final String cookieName = "shopcart";
+        final String shopcart_key = "shopcart:" + userId;
+        String shopcartRedisStr = redisOperator.get(shopcart_key);
+        String cookieValue = CookieUtils.getCookieValue(request, cookieName, true);
+
+
+        if(StringUtils.isNotBlank(shopcartRedisStr)){
+            if(!StringUtils.isBlank(cookieValue)){
+                List<ShopCartBO> shopCartBOCookieList = JsonUtils.jsonToList(cookieValue, ShopCartBO.class);
+                List<ShopCartBO> shopCartBORedisList = JsonUtils.jsonToList(shopcartRedisStr, ShopCartBO.class);
+                List<ShopCartBO> toBeDeletingList = null;
+
+                for (ShopCartBO shopCartRedisBO : shopCartBORedisList){
+                    for (ShopCartBO shopCartCookieBO : shopCartBOCookieList){
+                        if(shopCartRedisBO.getSpecId().equals(shopCartCookieBO.getSpecId())){
+                            if(toBeDeletingList == null){
+                                toBeDeletingList = new ArrayList<>();
+                            }
+
+                            //相同商品
+                            shopCartRedisBO.setBuyCounts(shopCartCookieBO.getBuyCounts());
+                            toBeDeletingList.add(shopCartRedisBO);
+                        }
+                    }
+                }
+
+                if(toBeDeletingList != null){
+                    shopCartBORedisList.removeAll(toBeDeletingList);
+                    shopCartBORedisList.addAll(shopCartBOCookieList);
+
+                    String shopcartRes = JsonUtils.objectToJson(shopCartBORedisList);
+
+                    CookieUtils.setCookie(request, response, cookieName, shopcartRes, true);
+                    redisOperator.set(shopcart_key, shopcartRes);
+                }
+
+            }else {
+                //redis不为空，cookie为空
+                CookieUtils.setCookie(request, response, cookieName,shopcartRedisStr,true);
+            }
+
+        }else { //redis 数据为空
+            if(!StringUtils.isBlank(cookieValue)){
+                redisOperator.set(shopcart_key, cookieValue);
+            }
+        }
+
     }
 
     private void setNull(Users users) {
@@ -120,8 +180,11 @@ public class PassportController {
 
         //退出时，需要删除uerId
         CookieUtils.deleteCookie(request, response, "user");
+
+
         //TODO 用户退出，清空购物车
-        //TODO 分布式系统中，清除用户数据
+        // 分布式系统中，清除用户数据
+        CookieUtils.deleteCookie(request, response, "shopcart");
 
         return IMOOCJSONResult.ok();
     }

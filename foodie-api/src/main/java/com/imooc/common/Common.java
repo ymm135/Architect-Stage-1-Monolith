@@ -28,4 +28,7 @@ public class Common {
     public static int DEFAULT_PAGESIZE = 20;
 
 
+    public static String SHOPCART = "shopcart";
+
+
 }

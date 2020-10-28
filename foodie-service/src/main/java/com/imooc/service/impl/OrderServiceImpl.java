@@ -7,6 +7,7 @@ import com.imooc.mapper.OrderItemsMapper;
 import com.imooc.mapper.OrderStatusMapper;
 import com.imooc.mapper.OrdersMapper;
 import com.imooc.pojo.*;
+import com.imooc.pojo.bo.ShopCartBO;
 import com.imooc.pojo.bo.SubmitOrderBO;
 import com.imooc.pojo.vo.MerchantOrdersVO;
 import com.imooc.pojo.vo.OrderVO;
@@ -15,6 +16,10 @@ import com.imooc.service.AddressService;
 import com.imooc.service.ItemsService;
 import com.imooc.service.OrderService;
 import com.imooc.utils.DateUtil;
+import com.imooc.utils.IMOOCJSONResult;
+import com.imooc.utils.JsonUtils;
+import com.imooc.utils.RedisOperator;
+import org.apache.commons.lang3.StringUtils;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.jdbc.metadata.CommonsDbcp2DataSourcePoolMetadata;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -47,9 +53,13 @@ public class OrderServiceImpl implements OrderService {
     private OrderStatusMapper orderStatusMapper;
 
 
+    @Autowired
+    private RedisOperator redisOperator;
+
+
     @Transactional(propagation = Propagation.REQUIRED)
     @Override
-    public OrderVO createOrder(SubmitOrderBO submitOrderBO) {
+    public IMOOCJSONResult createOrder(SubmitOrderBO submitOrderBO) {
         String addressId = submitOrderBO.getAddressId();
         String itemSpecIds = submitOrderBO.getItemSpecIds();
         String leftMsg = submitOrderBO.getLeftMsg();
@@ -87,10 +97,30 @@ public class OrderServiceImpl implements OrderService {
         Integer totalAmount = 0;//总价格
         Integer realPayAmount = 0;//实际支付价格
 
+        //TODO 整合Redis后，再去获取购物车中商品的数据量，现在默认为1
         Integer buyConuts = 1;
 
-        //TODO 整合Redis后，再去获取购物车中商品的数据量，现在默认为1
-        for (String id : ids){
+        String RESIS_KEY_SHOPCART = "shopcart:" + userId;
+        String shopcartItemsStr = redisOperator.get(RESIS_KEY_SHOPCART);
+        List<ShopCartBO> shopCartBOList = null;
+        List<ShopCartBO> toBeRemoveShopCartList = new ArrayList<>();
+
+        if (!StringUtils.isBlank(shopcartItemsStr)) {
+            shopCartBOList = JsonUtils.jsonToList(shopcartItemsStr, ShopCartBO.class);
+        } else {
+            return IMOOCJSONResult.errorMsg("购物车信息为空!!");
+        }
+
+        for (String id : ids) {
+
+            ShopCartBO shopCartItem = getShopCartFromList(shopCartBOList, id);
+            if (shopCartItem == null) {
+                return IMOOCJSONResult.errorMsg("购物车找不到该商品!");
+            }
+
+            toBeRemoveShopCartList.add(shopCartItem);
+
+            buyConuts = shopCartItem.getBuyCounts();
 
             //获取价格
             ItemsSpec itemsSpec = itemsService.queryItemSpecBySpecId(id);
@@ -103,7 +133,7 @@ public class OrderServiceImpl implements OrderService {
 
             //循环保存子订单的信息
             String subOrderItemId = sid.nextShort();
-            OrderItems subOrderItems= new OrderItems();
+            OrderItems subOrderItems = new OrderItems();
 
             subOrderItems.setId(subOrderItemId);
             subOrderItems.setBuyCounts(buyConuts);
@@ -144,8 +174,19 @@ public class OrderServiceImpl implements OrderService {
         OrderVO orderVO = new OrderVO();
         orderVO.setOrderId(orderId);
         orderVO.setMerchantOrdersVO(merchantOrdersVO);
+        orderVO.setToBeRemoveShopCartList(toBeRemoveShopCartList);
 
-        return orderVO;
+        return IMOOCJSONResult.ok(orderVO);
+    }
+
+    private ShopCartBO getShopCartFromList(List<ShopCartBO> list, String specId) {
+        for (ShopCartBO shopCartItem : list) {
+            if (shopCartItem.getSpecId().equals(specId)) {
+                return shopCartItem;
+            }
+        }
+
+        return null;
     }
 
     @Override
@@ -173,20 +214,19 @@ public class OrderServiceImpl implements OrderService {
         queryOrder.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
         List<OrderStatus> waitPayOrders = orderStatusMapper.select(queryOrder);
 
-        for(OrderStatus waitPayOrder : waitPayOrders){
+        for (OrderStatus waitPayOrder : waitPayOrders) {
             //检查超时时间
             Date createdTime = waitPayOrder.getCreatedTime();
             int days = DateUtil.daysBetween(createdTime, new Date());
 
-            if(days >= 1){
+            if (days >= 1) {
                 doCloseOrder(waitPayOrder.getOrderId());
             }
 
         }
     }
 
-    @Transactional(propagation = Propagation.REQUIRED)
-    private void doCloseOrder(String orderId){
+    private void doCloseOrder(String orderId) {
         OrderStatus closeOrder = new OrderStatus();
         closeOrder.setOrderStatus(OrderStatusEnum.CLOSE.type);
         closeOrder.setOrderId(orderId);

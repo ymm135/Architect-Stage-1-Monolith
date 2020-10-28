@@ -1,5 +1,7 @@
 package com.imooc.pojo.bo;
 
+import java.util.Objects;
+
 public class ShopCartBO {
 
     private String itemId;
@@ -73,5 +75,19 @@ public class ShopCartBO {
 
     public void setPriceNormal(Integer priceNormal) {
         this.priceNormal = priceNormal;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ShopCartBO that = (ShopCartBO) o;
+
+        return Objects.equals(specId, that.specId);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(specId);
     }
 }

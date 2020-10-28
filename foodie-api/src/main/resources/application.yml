@@ -13,7 +13,7 @@ spring:
 
   #环境配置
   profiles:
-    active: prod
+    active: dev
 
   datasource:                                   #数据源相关配置
     type: com.zaxxer.hikari.HikariDataSource    #hikari

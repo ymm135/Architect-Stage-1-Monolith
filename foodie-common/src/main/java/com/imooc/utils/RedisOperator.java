@@ -65,8 +65,8 @@ public class RedisOperator {
 	 * 
 	 * @param key
 	 */
-	public void del(String key) {
-		redisTemplate.delete(key);
+	public boolean del(String key) {
+		return redisTemplate.delete(key);
 	}
 
 	// String（字符串）

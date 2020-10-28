@@ -4,6 +4,7 @@ import com.imooc.common.Common;
 import com.imooc.enums.OrderStatusEnum;
 import com.imooc.enums.PayMethod;
 import com.imooc.pojo.OrderStatus;
+import com.imooc.pojo.bo.ShopCartBO;
 import com.imooc.pojo.bo.SubmitOrderBO;
 import com.imooc.pojo.vo.MerchantOrdersVO;
 import com.imooc.pojo.vo.OrderVO;
@@ -11,8 +12,10 @@ import com.imooc.service.OrderService;
 import com.imooc.utils.CookieUtils;
 import com.imooc.utils.IMOOCJSONResult;
 import com.imooc.utils.JsonUtils;
+import com.imooc.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +25,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 
 @Api(value = "订单相关接口", tags = "订单相关接口")
 @RestController
@@ -36,6 +40,9 @@ public class OrdersController {
     @Autowired
     private RestTemplate restTemplate;
 
+    @Autowired
+    private RedisOperator redisOperator;
+
     @ApiOperation(value = "创建订单接口", httpMethod = "POST", tags = "创建订单接口")
     @PostMapping("/create")
     public IMOOCJSONResult create(@RequestBody SubmitOrderBO submitOrderBO, HttpServletRequest request, HttpServletResponse response) {
@@ -49,7 +56,12 @@ public class OrdersController {
         }
 
         //1.创建订单
-        OrderVO order = orderService.createOrder(submitOrderBO);
+        IMOOCJSONResult orderRes = orderService.createOrder(submitOrderBO);
+        if(!orderRes.isOK()){
+            return orderRes;
+        }
+
+        OrderVO order = (OrderVO)orderRes.getData();
         MerchantOrdersVO merchantOrdersVO = order.getMerchantOrdersVO();
         merchantOrdersVO.setReturnUrl(Common.PAY_RETURN_URL);
 
@@ -58,10 +70,25 @@ public class OrdersController {
 
         //2.移除购物车已提交的商品
         //TODO 整合Redis之后，再去完善购物车
-
         //TODO 清除购物车，如果需要多次测试，可以不清空！！
+
+        List<ShopCartBO> toBeRemoveShopCartList = order.getToBeRemoveShopCartList();
+        String RESIS_KEY_SHOPCART = "shopcart:" + submitOrderBO.getUserId();
+        String shopcartItemsStr = redisOperator.get(RESIS_KEY_SHOPCART);
+        List<ShopCartBO> shopCartBOList = null;
+
+        if(!StringUtils.isBlank(shopcartItemsStr)){
+            shopCartBOList = JsonUtils.jsonToList(shopcartItemsStr, ShopCartBO.class);
+            shopCartBOList.removeAll(toBeRemoveShopCartList);
+        }else {
+            return IMOOCJSONResult.errorMsg("购物车信息为空!!");
+        }
+
+        String shopcartInfo = JsonUtils.objectToJson(shopCartBOList);
+        redisOperator.set(RESIS_KEY_SHOPCART, shopcartInfo);
+
         //清除cookie
-        CookieUtils.setCookie(request, response, "shopcart", "");
+        CookieUtils.setCookie(request, response, "shopcart", shopcartInfo, true);
 
         //3.向支付中心提交当前订单，用于保存支付中心的订单信息
         HttpHeaders headers = new HttpHeaders();

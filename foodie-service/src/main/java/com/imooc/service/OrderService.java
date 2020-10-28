@@ -4,6 +4,7 @@ import com.imooc.pojo.OrderStatus;
 import com.imooc.pojo.Orders;
 import com.imooc.pojo.bo.SubmitOrderBO;
 import com.imooc.pojo.vo.OrderVO;
+import com.imooc.utils.IMOOCJSONResult;
 
 public interface OrderService {
 
@@ -11,7 +12,7 @@ public interface OrderService {
      * 创建订单
      * @param submitOrderBO
      */
-    OrderVO createOrder(SubmitOrderBO submitOrderBO);
+    IMOOCJSONResult createOrder(SubmitOrderBO submitOrderBO);
 
     /**
      * 获取订单信息
