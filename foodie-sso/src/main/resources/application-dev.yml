@@ -1,0 +1,27 @@
+
+#服务器配置
+server:
+  port: 8090
+
+#数据源配置
+spring:
+  datasource:                                   #数据源相关配置
+    url: jdbc:mysql://localhost:3306/foodie-shop?characterEncoding=UTF-8&useSSL=false&useUnicode=true&serverTimezone=UTC
+    username: root
+    password: root
+
+  redis:
+    database: 0
+    host: 10.0.0.241
+    port: 6379
+    password: redis
+
+#    cluster:
+#      nodes: 10.0.0.240:6379,10.0.0.241:6379,10.0.0.242:6379,10.0.0.243:6379
+
+#mybatis配置
+mybatis:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
