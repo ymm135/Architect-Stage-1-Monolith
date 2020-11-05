@@ -1,0 +1,76 @@
+#服务器配置
+server:
+  port: 8089
+  tomcat:
+    uri-encoding: UTF-8
+    max-swallow-size: -1
+#    max-http-header-size: 80KB                  #已经废弃了
+
+
+#数据源配置
+spring:
+
+  datasource:                                   #数据源相关配置
+    type: com.zaxxer.hikari.HikariDataSource    #hikari
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/foodie-shop?characterEncoding=UTF-8&useSSL=false&useUnicode=true&serverTimezone=UTC
+    username: root
+    password: root
+
+
+  hikari:
+    connection-timeout: 30000
+    minimum-idle: 5
+    maximum-pool-size: 20
+    auto-commit: true
+    idle-timeout: 600000
+    pool-name: DataSourceHikariCP
+    max-lifetime: 1800000                     #毫秒，连接池的声明市场，超时且没有被使用则会被释放
+    connection-test-query: SELECT 1
+
+  servlet:
+    multipart:
+      max-file-size: 512000
+      max-request-size: 512000
+
+  redis:
+    database: 0
+    host: 10.0.0.241
+    port: 6379
+    password: redis
+
+#mybatis配置
+mybatis:
+  type-aliases-package: com.imooc.pojo          #所有pojo类所在路径
+  mapper-locations: classpath:mapper/*.xml      #mapper映射文件
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+
+############################################################
+#
+# mybatis mapper 配置
+#
+############################################################
+# 通用 Mapper 配置
+mapper:
+  mappers: com.imooc.my.mapper.MyMapper
+  not-empty: false
+  identity: MYSQL
+
+#分页插件
+pagehelper:
+  helperDialect: mysql
+  supportMethodsArguments: true
+
+
+#FDFS
+fdfs:
+  connect-timeout: 30 # 连接的超时时间
+  so-timeout: 30 # 读取的超时时间
+  tracker-list: 10.0.0.241:22122
+
+#自定义属性
+
+
+
