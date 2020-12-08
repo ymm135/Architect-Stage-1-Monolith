@@ -11,6 +11,9 @@ import com.imooc.pojo.vo.*;
 import com.imooc.service.ItemsService;
 import com.imooc.utils.DesensitizationUtil;
 import com.imooc.utils.PagedGridResult;
+import org.redisson.Redisson;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -18,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class ItemsServiceImpl implements ItemsService {
@@ -39,6 +43,9 @@ public class ItemsServiceImpl implements ItemsService {
 
     @Autowired
     private ItemsCommentsMapper itemsCommentsMapper;
+
+    @Autowired
+    private RedissonClient redissonClient;
 
 
     @Transactional(propagation = Propagation.SUPPORTS)
@@ -230,11 +237,19 @@ public class ItemsServiceImpl implements ItemsService {
         //集群下不推荐使用synchronized
         //也不实用锁数据库
         //分布式锁
+        RLock lock = redissonClient.getLock("Order-Item-" + specId);
+        lock.lock(5, TimeUnit.SECONDS);
 
-        //乐观锁
-        int res = itemsMapperCustom.decreaseItemSpecStock(specId, bugCounts);
-        if(res != 1){
-            throw new RuntimeException("订单创建失败, 购买数量大于库存数量!");
+        try {
+            //乐观锁
+            int res = itemsMapperCustom.decreaseItemSpecStock(specId, bugCounts);
+            if(res != 1){
+                throw new RuntimeException("订单创建失败, 购买数量大于库存数量!");
+            }
+        }catch (RuntimeException e){
+            e.printStackTrace();
+        }finally {
+            lock.unlock();
         }
 
     }

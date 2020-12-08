@@ -154,6 +154,12 @@
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.redisson</groupId>
+            <artifactId>redisson-spring-boot-starter</artifactId>
+            <version>3.12.5</version>
+        </dependency>
+
     </dependencies>
 
     <!-- Using platform encoding (UTF-8 actually) to copy filtered resources, i.e. build is platform dependent! -->
