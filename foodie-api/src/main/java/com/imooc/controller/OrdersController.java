@@ -16,6 +16,8 @@ import com.imooc.utils.RedisOperator;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.apache.commons.lang3.StringUtils;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +27,10 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 @Api(value = "订单相关接口", tags = "订单相关接口")
 @RestController
@@ -43,11 +48,52 @@ public class OrdersController {
     @Autowired
     private RedisOperator redisOperator;
 
+    @Autowired
+    private RedissonClient redissonClient;
+
+    @RequestMapping("/getOrderToken")
+    public IMOOCJSONResult getOrderToken(HttpSession session){
+        //防止重复提交，提供token
+        String token = UUID.randomUUID().toString();
+
+        //保存在redis中
+        redisOperator.set("Order_Token_" + session.getId(), token, 600 * 1000); //10分钟有效期
+
+        return IMOOCJSONResult.ok(token);
+    }
+
     @ApiOperation(value = "创建订单接口", httpMethod = "POST", tags = "创建订单接口")
     @PostMapping("/create")
     public IMOOCJSONResult create(@RequestBody SubmitOrderBO submitOrderBO, HttpServletRequest request, HttpServletResponse response) {
 
         logger.info(JsonUtils.objectToJson(submitOrderBO));
+        String clientToken = submitOrderBO.getToken();
+
+        if( StringUtils.isBlank(clientToken)){
+            return IMOOCJSONResult.errorMsg("token不存在");
+        }
+
+        //获取token要加锁
+        RLock rLock = redissonClient.getLock(clientToken);
+        rLock.lock(5, TimeUnit.SECONDS);
+
+        try {
+            final String TOKEN_KEY = "Order_Token_" + request.getSession().getId();
+            String token = redisOperator.get(TOKEN_KEY);
+            if(!clientToken.equals(token)){
+                throw new RuntimeException("token不匹配");
+            }
+
+            //redis删除token，就不用加锁了，但是会并发执行，同时进入这个方法，就需要加锁
+            redisOperator.del(TOKEN_KEY);
+
+        }finally {
+            try {
+                rLock.unlock();
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
 
         //判断支付方式
         Integer payMethod = submitOrderBO.getPayMethod();
