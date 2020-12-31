@@ -1,6 +1,6 @@
 package com.imooc.test;
 
-import com.imooc.Application;
+import com.imooc.ApiApplication;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = ApiApplication.class)
 public class ControllerTest {
 
     @Autowired

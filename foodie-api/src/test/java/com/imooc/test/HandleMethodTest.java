@@ -1,6 +1,6 @@
 package com.imooc.test;
 
-import com.imooc.Application;
+import com.imooc.ApiApplication;
 import com.imooc.controller.PassportController;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +13,7 @@ import org.springframework.web.method.HandlerMethod;
 import java.lang.reflect.Method;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = ApiApplication.class)
 public class HandleMethodTest {
     @Autowired
     private PassportController passportController;

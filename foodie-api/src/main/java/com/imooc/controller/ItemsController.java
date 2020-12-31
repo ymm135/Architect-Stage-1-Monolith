@@ -13,12 +13,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.constraints.Max;
 import java.util.List;
 
 @Api(value = "商品相关接口", tags = "包含商品详情、规格、价格、评论等信息")
 @RestController
+@Validated
 @RequestMapping("items")
 public class ItemsController {
 
@@ -78,7 +81,7 @@ public class ItemsController {
             @RequestParam("page")
                     Integer page,
             @ApiParam(name = "每页显示个数", value = "每页显示个数", required = true)
-            @RequestParam("pageSize")
+            @RequestParam("pageSize") @Max(100)
                     Integer pageSize) {
         logger.info("getItemComments =========================== " + itemId);
 
@@ -112,7 +115,7 @@ public class ItemsController {
             @RequestParam("page")
                     Integer page,
             @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
-            @RequestParam("pageSize")
+            @RequestParam("pageSize") @Max(100)
                     Integer pageSize) {
         logger.info("searchItems =========================== " + keywords);
 
@@ -151,7 +154,7 @@ public class ItemsController {
             @RequestParam("page")
                     Integer page,
             @ApiParam(name = "pageSize", value = "每页显示个数", required = true)
-            @RequestParam("pageSize")
+            @RequestParam("pageSize") @Max(100)
                     Integer pageSize) {
         logger.info("searchItems =========================== " + catId);
 

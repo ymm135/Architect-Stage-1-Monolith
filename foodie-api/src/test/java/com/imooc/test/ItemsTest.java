@@ -1,11 +1,10 @@
 package com.imooc.test;
 
-import com.imooc.Application;
+import com.imooc.ApiApplication;
 import com.imooc.pojo.Items;
 import com.imooc.pojo.ItemsImg;
 import com.imooc.pojo.ItemsParam;
 import com.imooc.pojo.ItemsSpec;
-import com.imooc.pojo.vo.CommentsVO;
 import com.imooc.service.ItemsService;
 import com.imooc.utils.PagedGridResult;
 import org.junit.Test;
@@ -17,7 +16,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import java.util.List;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = Application.class)
+@SpringBootTest(classes = ApiApplication.class)
 public class ItemsTest {
 
     @Autowired
