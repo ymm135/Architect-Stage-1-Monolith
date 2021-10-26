@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.imooc.mapper.ItemsMapperCustom">
+
+    <resultMap id="categoryItemsVO" type="com.imooc.pojo.vo.CategoryItemsVO">
+        <id column="id" property="id"/>
+        <result column="rootCatName" property="rootCatName"/>
+        <result column="slogan" property="slogan"/>
+        <result column="catImage" property="catImage"/>
+        <result column="bgColor" property="bgColor"/>
+
+        <!-- 返回集合对象 -->
+        <collection property="simpleItemList" ofType="com.imooc.pojo.vo.ItemsVO">
+            <id column="itemId" property="itemId"/>
+            <result column="itemName" property="itemName"/>
+            <result column="itemUrl" property="itemUrl"/>
+        </collection>
+    </resultMap>
+
+    <select id="getSixNewItemByRootCatId" parameterType="int" resultMap="categoryItemsVO">
+		SELECT
+			c.id as id,
+			c.`name` as rootCatName,
+			c.slogan as slogan,
+			c.cat_image as catImage,
+			c.bg_color as bgColor,
+			i.item_name as itemName,
+			i.id as itemId,
+			img.url as itemUrl
+		FROM
+			category AS c
+		LEFT JOIN
+			items AS i
+		ON
+			c.id = i.root_cat_id
+		JOIN
+			items_img AS img
+		ON
+			i.id = img.item_id
+		WHERE
+			c.type = 1
+		AND
+			i.root_cat_id = #{root_cat_id}
+		AND
+			img.is_main = 1
+		ORDER BY img.created_time DESC
+		LIMIT 0,6
+  	</select>
+
+    <select id="queryItemComments" parameterType="Map" resultType="com.imooc.pojo.vo.CommentsVO">
+        SELECT
+        c.comment_level AS commentLevel,
+        c.content AS content,
+        c.sepc_name AS specName,
+        c.created_time AS createdTime,
+        u.nickname AS nickname,
+        u.face AS userFace
+        FROM
+        items_comments AS c
+        LEFT JOIN
+        users AS u
+        on
+        c.user_id = u.id
+        WHERE
+        c.item_id = #{map.itemId}
+        <if test=" map.level != null and map.level != '' ">
+            AND
+            c.comment_level = #{map.level}
+        </if>
+        ORDER BY
+        c.updated_time DESC
+
+    </select>
+
+    <select id="searchItems" parameterType="Map" resultType="com.imooc.pojo.vo.SearchItemsVO">
+		SELECT
+			i.item_name as itemName,
+			i.id as itemId,
+			i.sell_counts as sellCounts,
+			s.price_discount as price,
+			img.url as imgUrl
+		FROM
+			items as i
+		LEFT JOIN
+			(
+				SELECT
+					item_id, MIN(price_discount) as price_discount
+				FROM
+					items_spec as spec
+				GROUP BY
+					item_id
+			) as s
+		ON
+			i.id = s.item_id
+		LEFT JOIN
+			items_img as img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+			<if test=" map.keywords != null and map.keywords != '' ">
+				AND
+				i.item_name LIKE '%${map.keywords}%'
+			</if>
+		ORDER BY
+			<choose>
+				<when test="map.sort == &quot;c&quot; ">
+					i.sell_counts desc
+				</when>
+				<when test="map.sort == &quot;p&quot;">
+					s.price_discount asc
+				</when>
+				<otherwise>
+					i.item_name asc
+				</otherwise>
+			</choose>
+	</select>
+
+	<select id="searchItemsByThirdCat" parameterType="Map" resultType="com.imooc.pojo.vo.SearchItemsVO">
+		SELECT
+			i.item_name as itemName,
+			i.id as itemId,
+			i.sell_counts as sellCounts,
+			s.price_discount as price,
+			img.url as imgUrl
+		FROM
+			items as i
+		LEFT JOIN
+			(
+			SELECT
+				item_id, MIN(price_discount) as price_discount
+			FROM
+				items_spec as spec
+			GROUP BY
+				item_id
+			) as s
+		ON
+			i.id = s.item_id
+		LEFT JOIN
+			items_img as img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+		AND
+			i.cat_id = #{map.catId}
+		ORDER BY
+		<choose>
+			<when test="map.sort == &quot;c&quot; ">
+				i.sell_counts desc
+			</when>
+			<when test="map.sort == &quot;p&quot;">
+				s.price_discount asc
+			</when>
+			<otherwise>
+				i.item_name asc
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="queryItemBySpecId" parameterType="Map" resultType="com.imooc.pojo.vo.ShopCartVO" >
+		SELECT
+			spec.item_id as itemId,
+			img.url as itemImgUrl,
+			i.item_name as itemName,
+			spec.id as specId,
+			spec.`name` as specName,
+			i.sell_counts as buyCounts,
+			spec.price_discount as priceDiscount,
+			spec.price_normal as priceNormal
+		FROM
+			items_spec spec
+		left JOIN
+			items i
+		ON
+			i.id = spec.item_id
+		LEFT JOIN
+			items_img img
+		ON
+			i.id = img.item_id
+		WHERE
+			img.is_main = 1
+		AND
+				spec.id
+			IN
+				<foreach collection="paramsList" index="index" item="specId" open="(" separator="," close=")">
+					#{specId}
+				</foreach>
+	</select>
+	
+	<update id="decreaseItemSpecStock" >
+		update
+			items_spec
+		set
+			stock = stock - #{pendingCounts}
+		WHERE
+			id = #{specId}
+		AND
+			stock >= #{pendingCounts}
+	</update>
+</mapper>

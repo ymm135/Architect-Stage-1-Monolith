@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.imooc.mapper.OrdersMapperCustom">
+	
+	<resultMap id="ordersVO" type="com.imooc.pojo.vo.user_center.OrdersVO">
+		<id column="orderId" property="orderId" />
+		<result column="createdTime" property="createdTime"  />
+		<result column="payMethod" property="payMethod"  />
+		<result column="realPayAmount" property="realPayAmount"  />
+		<result column="postAmount" property="postAmount"  />
+		<result column="isComment" property="isComment"  />
+		<result column="orderStatus" property="orderStatus"  />
+
+		<!-- 返回集合对象 -->
+		<collection property="subOrderItemList" select="getOrderItems" column="orderId" ofType="com.imooc.pojo.vo.user_center.OrderItemsVO">
+			<result column="itemId" property="itemId" />
+			<result column="itemName" property="itemName" />
+			<result column="itemImg" property="itemImg" />
+			<result column="itemSpecName" property="itemSpecName" />
+			<result column="itemSpecId" property="itemSpecId" />
+			<result column="price" property="price" />
+			<result column="buyCounts" property="buyCounts" />
+		</collection>
+	</resultMap>
+
+	<select id="queryOrders" parameterType="Map" resultMap="ordersVO">
+		SELECT
+		od.id AS orderId,
+		od.is_comment as isComment,
+		od.created_time AS createdTime,
+		od.pay_method AS payMethod,
+		od.real_pay_amount AS realPayAmount,
+		od.post_amount as postAmount,
+		os.order_status as orderStatus
+		FROM
+		orders AS od
+		LEFT JOIN
+		order_status as os
+		ON
+		od.id = os.order_id
+		WHERE
+		od.user_id = #{paramsMap.userId}
+		AND
+		od.is_delete = 0
+		<if test="paramsMap.orderStatus != null">
+			AND
+			os.order_status = ${paramsMap.orderStatus}
+		</if>
+		ORDER BY
+		od.updated_time DESC
+	</select>
+
+	<select id="getOrderItems" parameterType="String" resultType="com.imooc.pojo.vo.user_center.OrderItemsVO">
+		SELECT
+			oi.item_id as itemId,
+			oi.item_name as itemName,
+			oi.item_img as itemImg,
+			oi.item_spec_name as itemSpecName,
+			oi.item_spec_id as itemSpecId,
+			oi.price as price,
+			oi.buy_counts as buyCounts
+		FROM
+			order_items AS oi
+		WHERE
+			oi.order_id = #{orderId}
+	</select>
+	
+<!--    <select id="queryOrders" parameterType="Map" resultMap="ordersVO">-->
+<!--		SELECT-->
+<!--			od.id AS orderId,-->
+<!--			od.created_time AS createdTime,-->
+<!--			od.pay_method AS payMethod,-->
+<!--			od.real_pay_amount AS realPayAmount,-->
+<!--			od.post_amount as postAmount,-->
+<!--			os.order_status as orderStatus,-->
+<!--			oi.item_id as itemId,-->
+<!--			oi.item_name as itemName,-->
+<!--			oi.item_img as itemImg,-->
+<!--			oi.item_spec_name as itemSpecName,-->
+<!--			oi.item_spec_id as itemSpecId,-->
+<!--			oi.price as price,-->
+<!--			oi.buy_counts as buyCounts-->
+<!--		FROM-->
+<!--			orders AS od-->
+<!--		LEFT JOIN-->
+<!--			order_status as os-->
+<!--		ON-->
+<!--			od.id = os.order_id-->
+<!--		LEFT JOIN-->
+<!--			order_items AS oi-->
+<!--		on-->
+<!--			od.id = oi.order_id-->
+<!--		WHERE-->
+<!--			od.user_id = #{paramsMap.userId}-->
+<!--		AND-->
+<!--			od.is_delete = 0-->
+<!--			<if test="paramsMap.orderStatus != null">-->
+<!--				AND-->
+<!--				os.order_status = ${paramsMap.orderStatus}-->
+<!--			</if>-->
+<!--		ORDER BY-->
+<!--			od.updated_time DESC-->
+<!--  </select>-->
+
+	<select id="getUserOrderCount" parameterType="Map" resultType="int">
+		SELECT
+			COUNT(1)
+		FROM
+			orders as od
+		LEFT JOIN
+			order_status as os
+		ON
+			od.id = os.order_id
+		WHERE
+			od.user_id = #{paramsMap.userId}
+		AND
+			os.order_status = #{paramsMap.orderStatus}
+			<if test="paramsMap.isComment != null">
+				AND
+					od.is_comment = ${paramsMap.isComment}
+			</if>
+	</select>
+	
+	<select id="getUserOrderTrend" parameterType="Map" resultType="com.imooc.pojo.OrderStatus">
+		SELECT
+			os.order_id AS orderId,
+			os.order_status AS orderStatus,
+			os.created_time AS createdTime,
+			os.pay_time AS payTime,
+			os.deliver_time AS deliverTime,
+			os.success_time AS successTime,
+			os.close_time AS closeTime,
+			os.comment_time as commentTime
+		FROM
+			orders as od
+		left JOIN
+			order_status as os
+		ON
+			od.id = os.order_id
+		WHERE
+			od.is_delete = 0
+		AND
+			od.user_id = #{paramsMap.userId}
+		AND
+			os.order_status IN (20 ,30, 40)
+		ORDER BY
+			os.order_id
+		DESC
+	</select>
+
+</mapper>
